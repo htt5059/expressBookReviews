@@ -40,12 +40,35 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = parseInt(req.params.isbn)
-    var book = books[isbn]
-    if(book){
+    const username = req.session.authorization["username"]
+    const userReview = req.query.review
 
+    var book = books[isbn]
+    console.log(book)
+    if(book){
+        console.log("checked")
+        var reviews = book.reviews
+        for(var review in reviews){
+            if(review.username === username)
+                review.review = userReview
+        }
+        reviews[username] = userReview
+        return res.status(200).json({message: "Review Updated"})
     }
     return res.status(404).json({message: "Book Not Found"})
 });
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn
+    var book = books[isbn]
+    const username = req.session.authorization["username"]
+    console.log(req.session.authorization)
+
+    if(book){
+        delete book.reviews[username]
+    }
+    return res.status(200).json({message: "Review Deleted"})
+})
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
